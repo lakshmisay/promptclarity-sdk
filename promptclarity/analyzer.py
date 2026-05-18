@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any, Mapping, Optional
 
+from promptclarity.llm import LLMAdvisor, normalize_llm_report
 from promptclarity.metadata import analyze_metadata
 from promptclarity.prompt_builder import build_improved_prompt
 from promptclarity.recommender import missing_items_from_findings, recommendations_for
@@ -15,12 +16,17 @@ from promptclarity.types import GuardResult
 class PromptClarity:
     """Validate prompts before they reach an LLM system."""
 
+    def __init__(self, *, llm_advisor: Optional[LLMAdvisor] = None) -> None:
+        self.llm_advisor = llm_advisor
+
     def validate(
         self,
         prompt: str,
         *,
         metadata: Optional[Mapping[str, Any]] = None,
         build_prompt: bool = True,
+        use_llm: bool = False,
+        llm_advisor: Optional[LLMAdvisor] = None,
     ) -> GuardResult:
         if not isinstance(prompt, str):
             raise TypeError("prompt must be a string")
@@ -53,6 +59,21 @@ class PromptClarity:
             if recommendation not in recommendations:
                 recommendations.append(recommendation)
 
+        advisor = llm_advisor or self.llm_advisor
+        llm_report = None
+        if use_llm:
+            if advisor is None:
+                raise ValueError("use_llm=True requires an llm_advisor callable")
+            llm_report = normalize_llm_report(
+                advisor(clean_prompt, metadata=metadata)
+            )
+            for item in llm_report.missing_items:
+                if item not in missing_items:
+                    missing_items.append(item)
+            for recommendation in llm_report.recommendations:
+                if recommendation not in recommendations:
+                    recommendations.append(recommendation)
+
         status = status_for_score(prompt_score, risk.level)
         improved_prompt = (
             build_improved_prompt(clean_prompt, missing_items) if build_prompt else None
@@ -66,6 +87,7 @@ class PromptClarity:
             recommendations=recommendations,
             findings=findings,
             improved_prompt=improved_prompt,
+            llm_report=llm_report,
         )
 
 

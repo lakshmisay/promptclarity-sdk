@@ -1,3 +1,5 @@
+import pytest
+
 from promptclarity import PromptClarity, PromptGuard, __version__
 
 
@@ -79,3 +81,31 @@ def test_expanded_risk_patterns_detect_secret_and_attack_terms():
 
     assert result.status == "blocked"
     assert result.risk_level == "high"
+
+
+def test_optional_llm_advisor_adds_items_without_deciding_score():
+    def advisor(prompt, *, metadata=None):
+        return {
+            "model": "test-model",
+            "confidence": 0.9,
+            "missing_items": ["domain assumptions"],
+            "recommendations": ["Clarify the assumptions the model should use."],
+        }
+
+    guard = PromptClarity(llm_advisor=advisor)
+
+    baseline = PromptClarity().validate("Analyze this data and give insights")
+    result = guard.validate("Analyze this data and give insights", use_llm=True)
+
+    assert "domain assumptions" in result.missing_items
+    assert "Clarify the assumptions the model should use." in result.recommendations
+    assert result.llm_report is not None
+    assert result.llm_report.model == "test-model"
+    assert result.prompt_score == baseline.prompt_score
+
+
+def test_llm_mode_requires_advisor():
+    guard = PromptClarity()
+
+    with pytest.raises(ValueError, match="llm_advisor"):
+        guard.validate("Analyze this data", use_llm=True)

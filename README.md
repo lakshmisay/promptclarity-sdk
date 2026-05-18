@@ -53,6 +53,38 @@ result = guard.validate("Analyze this data and give insights")
 print(result.to_dict())
 ```
 
+## Optional LLM Assistance
+
+PromptClarity does not choose or bundle an LLM provider. By default, the SDK uses deterministic local rules only. If you want LLM-assisted semantic review, your application decides the model and passes an advisor callback.
+
+```python
+from promptclarity import PromptClarity
+
+
+def my_llm_advisor(prompt, *, metadata=None):
+    # Call your chosen model/provider here.
+    # Return a dict or LLMReport.
+    return {
+        "model": "your-model-name",
+        "confidence": 0.86,
+        "missing_items": ["domain assumptions"],
+        "recommendations": ["Clarify the assumptions the model should use."],
+    }
+
+
+guard = PromptClarity(llm_advisor=my_llm_advisor)
+result = guard.validate("Analyze this data", use_llm=True)
+
+print(result.to_dict())
+```
+
+Who decides the LLM?
+
+- Your app decides the provider and model.
+- PromptClarity decides the baseline rule-based score, status, and risk level.
+- The optional LLM advisor adds extra missing items and recommendations.
+- No LLM call happens unless `use_llm=True`.
+
 Example output:
 
 ```python
@@ -87,6 +119,7 @@ promptclarity/
 |-- metadata.py          # dataset/file metadata analysis
 |-- recommender.py       # missing-detail suggestions
 |-- prompt_builder.py    # improved prompt generator
+|-- llm.py               # optional LLM advisor interface
 `-- __init__.py
 ```
 

@@ -33,6 +33,16 @@ class MetadataReport:
 
 
 @dataclass(frozen=True)
+class LLMReport:
+    """Optional LLM-assisted assessment supplied by a user-provided advisor."""
+
+    missing_items: List[str] = field(default_factory=list)
+    recommendations: List[str] = field(default_factory=list)
+    confidence: Optional[float] = None
+    model: Optional[str] = None
+
+
+@dataclass(frozen=True)
 class GuardResult:
     """Final validation response."""
 
@@ -43,7 +53,7 @@ class GuardResult:
     recommendations: List[str]
     findings: List[RuleFinding] = field(default_factory=list)
     improved_prompt: Optional[str] = None
+    llm_report: Optional[LLMReport] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
-
