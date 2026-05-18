@@ -17,6 +17,20 @@ PromptClarity SDK helps teams validate LLM inputs for:
 - cost and token waste reduction
 - safer enterprise AI workflows
 
+## Rule Coverage
+
+PromptClarity currently uses 250+ deterministic rule signals across:
+
+- vague prompt wording
+- missing objective, audience, constraints, timeframe, examples, and success criteria
+- dataset details and privacy handling
+- output format and analysis type detection
+- evaluation and selection criteria
+- RAG source/citation readiness
+- agent/tool boundary readiness
+- sensitive-data patterns such as emails, phone numbers, SSNs, API keys, tokens, private keys, IPs, and cards
+- unsafe-intent terms such as phishing, malware, prompt injection, SQL injection, credential theft, and bypass attempts
+
 Enterprise tagline:
 
 > A quality, clarity, and risk validation SDK for LLM inputs.
