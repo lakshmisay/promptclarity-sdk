@@ -1,0 +1,50 @@
+from promptclarity import PromptClarity, PromptGuard, __version__
+
+
+def test_validate_flags_unclear_data_prompt():
+    guard = PromptClarity()
+
+    result = guard.validate("Analyze this data and give insights")
+
+    assert result.status == "needs_clarification"
+    assert result.prompt_score < 60
+    assert result.risk_level == "low"
+    assert "business objective" in result.missing_items
+    assert "dataset details" in result.missing_items
+    assert "output format" in result.missing_items
+    assert "Specify the type of analysis required." in result.recommendations
+
+
+def test_validate_ready_prompt_scores_high():
+    guard = PromptClarity()
+
+    result = guard.validate(
+        "Create a markdown EDA summary for the customer churn dataset. "
+        "The business objective is to identify retention actions. "
+        "Use the csv file with 10000 rows and include success criteria."
+    )
+
+    assert result.status == "ready"
+    assert result.prompt_score >= 80
+    assert result.missing_items == []
+
+
+def test_metadata_adds_dataset_recommendations():
+    guard = PromptClarity()
+
+    result = guard.validate(
+        "Create a markdown EDA summary for the dataset with a business objective.",
+        metadata={"name": "sales.csv"},
+    )
+
+    assert "columns" in result.missing_items
+    assert "row count" in result.missing_items
+    assert "source" in result.missing_items
+
+
+def test_public_version_is_available():
+    assert __version__ == "0.1.0"
+
+
+def test_promptguard_alias_remains_available():
+    assert PromptGuard is PromptClarity

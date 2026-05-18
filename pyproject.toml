@@ -1,0 +1,55 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "promptclarity-sdk"
+version = "0.1.0"
+description = "A quality, clarity, and risk validation SDK for LLM inputs."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+  { name = "PromptClarity" }
+]
+license = "MIT"
+keywords = [
+  "llm",
+  "prompt",
+  "prompt-quality",
+  "clarity",
+  "validation",
+  "prompt-engineering",
+  "rag",
+  "agents"
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Information Technology",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.optional-dependencies]
+dev = [
+  "build>=1.2",
+  "pytest>=8",
+  "twine>=5"
+]
+
+[project.urls]
+Homepage = "https://github.com/promptclarity/promptclarity-sdk"
+Issues = "https://github.com/promptclarity/promptclarity-sdk/issues"
+Source = "https://github.com/promptclarity/promptclarity-sdk"
+
+[tool.setuptools.packages.find]
+include = ["promptclarity*"]
+
+[tool.setuptools.package-data]
+promptclarity = ["py.typed"]
