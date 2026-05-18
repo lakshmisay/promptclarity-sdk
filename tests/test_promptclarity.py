@@ -46,7 +46,7 @@ def test_metadata_adds_dataset_recommendations():
 
 
 def test_public_version_is_available():
-    assert __version__ == "0.1.0"
+    assert __version__ == "0.1.1"
 
 
 def test_promptguard_alias_remains_available():
