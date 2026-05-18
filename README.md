@@ -55,15 +55,50 @@ print(result.to_dict())
 
 ## Optional LLM Assistance
 
-PromptClarity does not choose or bundle an LLM provider. By default, the SDK uses deterministic local rules only. If you want LLM-assisted semantic review, your application decides the model and passes an advisor callback.
+PromptClarity can run in two modes:
+
+1. **Rule-only mode**: default, local, deterministic, no API key, no network call.
+2. **LLM-assisted mode**: optional semantic review using an LLM advisor that you provide.
+
+PromptClarity does not choose, bundle, or call an LLM provider by itself. Your application decides which provider and model to use, then passes a callback to the SDK.
+
+You can use any model/provider, including:
+
+- OpenAI
+- Anthropic Claude
+- Google Gemini
+- Mistral
+- Groq
+- Ollama or other local models
+- Azure OpenAI
+- private/internal enterprise models
+- any custom API that your application can call
+
+### Who Decides What?
+
+- **Your app decides the LLM provider and model.**
+- **Your app owns API keys, auth, network calls, retries, and provider-specific SDKs.**
+- **PromptClarity decides the baseline score, status, risk level, and rule findings.**
+- **The optional LLM advisor only adds semantic missing items and recommendations.**
+- **No LLM call happens unless `use_llm=True`.**
+- **If `use_llm=True`, an `llm_advisor` callback is required.**
+
+The LLM advisor can return a plain dictionary or an `LLMReport`.
 
 ```python
-from promptclarity import PromptClarity
+from promptclarity import PromptClarity, LLMReport
 
 
 def my_llm_advisor(prompt, *, metadata=None):
-    # Call your chosen model/provider here.
-    # Return a dict or LLMReport.
+    # Call your chosen LLM here:
+    # - OpenAI
+    # - Claude
+    # - Gemini
+    # - Ollama/local model
+    # - internal enterprise model
+    # - any other provider
+    #
+    # Then normalize the model response into this shape.
     return {
         "model": "your-model-name",
         "confidence": 0.86,
@@ -78,12 +113,46 @@ result = guard.validate("Analyze this data", use_llm=True)
 print(result.to_dict())
 ```
 
-Who decides the LLM?
+Expected advisor return shape:
 
-- Your app decides the provider and model.
-- PromptClarity decides the baseline rule-based score, status, and risk level.
-- The optional LLM advisor adds extra missing items and recommendations.
-- No LLM call happens unless `use_llm=True`.
+```python
+{
+    "model": "provider-model-name",
+    "confidence": 0.86,
+    "missing_items": ["domain assumptions"],
+    "recommendations": ["Clarify the assumptions the model should use."],
+}
+```
+
+The same result can be returned as an `LLMReport`:
+
+```python
+from promptclarity import LLMReport
+
+
+def my_llm_advisor(prompt, *, metadata=None):
+    return LLMReport(
+        model="your-model-name",
+        confidence=0.86,
+        missing_items=["domain assumptions"],
+        recommendations=["Clarify the assumptions the model should use."],
+    )
+```
+
+### Why PromptClarity Does Not Pick the LLM
+
+Different teams have different constraints:
+
+- cost
+- latency
+- privacy
+- compliance
+- deployment region
+- model quality
+- internal vendor policy
+- local/offline requirements
+
+Because of that, PromptClarity stays provider-agnostic. It gives you the validation interface; your application chooses the model.
 
 Example output:
 
